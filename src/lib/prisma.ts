@@ -1,8 +1,7 @@
-// lib/prisma.ts
-
+// src/lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
 
-// Create a global prisma var to prevent multiple instances in dev
+// Prevent multiple instances in development
 declare global {
   var prisma: PrismaClient | undefined;
 }
