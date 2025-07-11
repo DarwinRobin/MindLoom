@@ -1,10 +1,9 @@
 // src/app/api/auth/[...nextauth]/route.ts
-
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';  // ← this path
 
 const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -18,12 +17,9 @@ const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
-  session: {
-    strategy: 'database',
-  },
+  session: { strategy: 'database' },
   callbacks: {
     async session({ session, user }) {
-      // include user.id on session
       return { ...session, user: { ...session.user, id: user.id } };
     },
   },
