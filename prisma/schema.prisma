@@ -1,0 +1,58 @@
+// prisma/schema.prisma
+
+// 1. Datasource: tells Prisma how to connect to your database
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 2. Generator: will output the Prisma Client into node_modules/.prisma/client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 3. Your data models (example—you likely already have these)
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String?
+  createdAt DateTime  @default(now())
+  // … other fields …
+}
+
+model Course {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  image       String?
+  lessons     Lesson[]
+  enrollments CourseEnrollment[]
+}
+
+model Lesson {
+  id        String    @id @default(uuid())
+  title     String
+  content   String
+  type      String
+  course    Course    @relation(fields: [courseId], references: [id])
+  courseId  String
+}
+
+model CourseEnrollment {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  createdAt DateTime @default(now())
+}
+
+model Progress {
+  id        String    @id @default(uuid())
+  enrollment CourseEnrollment @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String
+  lesson     Lesson    @relation(fields: [lessonId], references: [id])
+  lessonId   String
+  completed  Boolean   @default(false)
+  updatedAt  DateTime  @updatedAt
+}
