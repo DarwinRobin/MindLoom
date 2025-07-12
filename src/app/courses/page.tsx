@@ -1,33 +1,36 @@
-// src/app/courses/page.tsx
-import CourseCard from '@/components/courses/CourseCard';
+'use client'
 
-export default function CoursesPage() {
-  const courses = [
-    {
-      id: 'cognitive-psychology',
-      title: 'Cognitive Psychology',
-      description: 'Explore mental processes like memory, attention, and problem-solving',
-      level: 'Intermediate',
-      duration: '8 weeks',
-      lessons: 12
+import { prisma } from '@/lib/prisma'
+import CourseCard from '@/components/CourseCard'
+import { Course } from '@prisma/client'
+
+export default async function CoursesPage() {
+  const courses: (Course & { lessons: { id: string }[] })[] = await prisma.course.findMany({
+    include: {
+      lessons: {
+        select: { id: true },
+      },
     },
-    // Add more courses
-  ];
+  })
 
   return (
-    <div className="min-h-screen py-20 px-4 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Psychology Courses</h1>
-        <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-          Deepen your understanding of the human mind with our expert-led courses
-        </p>
-      </div>
-      
+    <div className="max-w-6xl mx-auto p-8">
+      <h1 className="text-4xl font-bold mb-8">All Courses</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {courses.map(course => (
-          <CourseCard key={course.id} course={course} />
+        {courses.map((course) => (
+          <CourseCard
+            key={course.id}
+            course={{
+              id: course.id,
+              title: course.title,
+              description: course.description,
+              level: course.level,
+              duration: course.duration,
+              lessons: course.lessons.length,
+            }}
+          />
         ))}
       </div>
     </div>
-  );
+  )
 }
