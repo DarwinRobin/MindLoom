@@ -1,101 +1,83 @@
 // src/components/courses/LessonPlayerClient.tsx
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import LessonPlayer from './LessonPlayer';
+import React, { Dispatch, SetStateAction } from 'react'
 
-interface LessonClientProps {
-  lesson: {
-    id: number;
-    title: string;
-    type: string;
-    contentUrl: string;
-    description: string;
-    duration: string;
-  };
-  courseId: string;
+interface Lesson {
+  title: string
+  type: 'text' | 'audio' | 'video'
+  content: string
+  description: string
+  duration: string
 }
 
-export default function LessonPlayerClient({ lesson, courseId }: LessonClientProps) {
-  const router = useRouter();
-  const [isCompleted, setIsCompleted] = useState<boolean>(false);
-  const [notes, setNotes] = useState<string>('');
+interface LessonPlayerClientProps {
+  lesson: Lesson
+  isCompleted: boolean
+  onToggleComplete: () => void
+  onPrevious: () => void
+  onNext: () => void
+  notes: string
+  onNotesChange: Dispatch<SetStateAction<string>>
+  onSaveNotes: () => void
+}
 
-  // Fetch progress and existing note on mount
-  useEffect(() => {
-    // 1️⃣ Progress
-    fetch('/api/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: 1, lessonId: lesson.id, completed: false }),
-    })
-      .then(res => res.json())
-      .then(data => setIsCompleted(data.completed));
-
-    // 2️⃣ Notes (simple GET via POST hack — adjust to real GET later)
-    fetch('/api/notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: 1, lessonId: lesson.id, content: '' }),
-    })
-      .then(res => res.json())
-      .then(data => setNotes(data.content || ''));
-  }, [lesson.id]);
-
-  // Toggle completion
-  const toggleComplete = () => {
-    fetch('/api/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: 1, lessonId: lesson.id, completed: !isCompleted }),
-    })
-      .then(res => res.json())
-      .then(data => setIsCompleted(data.completed));
-  };
-
-  // Save notes
-  const saveNotes = () => {
-    fetch('/api/notes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'note-id': '0', // for upsert header; 0 means “create new”
-      },
-      body: JSON.stringify({ userId: 1, lessonId: lesson.id, content: notes }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        // you could store returned note.id in state and use for updates
-        console.log('Notes saved:', data);
-      });
-  };
-
-  const currentId = lesson.id;
-  const prevId = String(currentId - 1);
-  const nextId = String(currentId + 1);
-
+const LessonPlayerClient: React.FC<LessonPlayerClientProps> = ({
+  lesson,
+  isCompleted,
+  onToggleComplete,
+  onPrevious,
+  onNext,
+  notes,
+  onNotesChange,
+  onSaveNotes,
+}) => {
   return (
-    <LessonPlayer
-      lesson={{
-        title: lesson.title,
-        type: lesson.type as 'video' | 'audio' | 'text',
-        content: lesson.contentUrl,
-        description: lesson.description,
-        duration: lesson.duration,
-      }}
-      isCompleted={isCompleted}
-      onToggleComplete={toggleComplete}
-      onPrevious={() => {
-        if (currentId > 1) router.push(`/courses/${courseId}/${prevId}`);
-      }}
-      onNext={() => {
-        router.push(`/courses/${courseId}/${nextId}`);
-      }}
-      // Pass down notes UI handlers
-      notes={notes}
-      onNotesChange={setNotes}
-      onSaveNotes={saveNotes}
-    />
-  );
+    <div>
+      <h2 className="text-2xl font-bold mb-2">{lesson.title}</h2>
+      <p className="text-sm text-gray-600">{lesson.description}</p>
+      <div className="mt-4">
+        {lesson.type === 'video' && (
+          <video controls className="w-full rounded-lg shadow">
+            <source src={lesson.content} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        )}
+        {lesson.type === 'audio' && (
+          <audio controls className="w-full">
+            <source src={lesson.content} type="audio/mpeg" />
+            Your browser does not support the audio tag.
+          </audio>
+        )}
+        {lesson.type === 'text' && <p className="text-gray-800">{lesson.content}</p>}
+      </div>
+
+      <div className="mt-6 flex gap-3">
+        <button onClick={onPrevious} className="bg-gray-200 px-4 py-2 rounded">
+          Previous
+        </button>
+        <button onClick={onNext} className="bg-blue-500 text-white px-4 py-2 rounded">
+          Next
+        </button>
+        <button onClick={onToggleComplete} className="bg-green-500 text-white px-4 py-2 rounded">
+          {isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
+        </button>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-lg font-medium">Notes</h3>
+        <textarea
+          className="w-full border p-2 rounded mt-2"
+          rows={5}
+          value={notes}
+          onChange={(e) => onNotesChange(e.target.value)}
+        />
+        <button onClick={onSaveNotes} className="mt-2 bg-indigo-500 text-white px-4 py-2 rounded">
+          Save Notes
+        </button>
+      </div>
+    </div>
+  )
 }
+
+export default LessonPlayerClient

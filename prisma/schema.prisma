@@ -4,85 +4,95 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model User {
-  id            String              @id @default(uuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String?             @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
-  accounts      Account[]           @relation("UserAccounts")
-  sessions      Session[]           @relation("UserSessions")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt      // ✅ optional to avoid breaking migration
+
+  accounts      Account[]
+  sessions      Session[]
   enrollments   CourseEnrollment[]
-  progress      Progress[]          @relation("UserProgress")
-}
-
-model Account {
-  id                String   @id @default(uuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-
-  user User @relation("UserAccounts", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(uuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade)
+  progresses    Progress[]
 }
 
 model Course {
-  id          String             @id @default(uuid())
+  id          String             @id @default(cuid())
   title       String
   description String
-  image       String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   lessons     Lesson[]
   enrollments CourseEnrollment[]
 }
 
 model Lesson {
-  id        String     @id @default(uuid())
+  id        String   @id @default(cuid())
   title     String
   content   String
+  videoUrl  String            // ✅ This is the field that was failing earlier
+  course    Course   @relation(fields: [courseId], references: [id])
   courseId  String
-  course    Course     @relation(fields: [courseId], references: [id])
   progress  Progress[]
 }
 
 model CourseEnrollment {
-  id        String   @id @default(uuid())
-  userId    String
-  courseId  String
-  createdAt DateTime @default(now())
-
+  id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id])
+  userId    String
   course    Course   @relation(fields: [courseId], references: [id])
-  progress  Progress[]
+  courseId  String
+  enrolledAt DateTime @default(now())
 }
 
 model Progress {
-  id            String   @id @default(uuid())
-  enrollmentId  String
-  lessonId      String
-  userId        String
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  lessonId  String
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
 
-  enrollment    CourseEnrollment @relation(fields: [enrollmentId], references: [id])
-  lesson        Lesson           @relation(fields: [lessonId], references: [id])
-  user          User             @relation("UserProgress", fields: [userId], references: [id])
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? 
+  access_token       String? 
+  expires_at         Int?    
+  token_type         String? 
+  scope              String? 
+  id_token           String? 
+  session_state      String? 
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
