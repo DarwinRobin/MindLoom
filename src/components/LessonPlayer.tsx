@@ -1,23 +1,19 @@
 // src/components/LessonPlayer.tsx
-'use client'
-
 import React from 'react'
-import { Lesson } from '@prisma/client'
 
 interface LessonPlayerProps {
-  lesson: Lesson
+  videoUrl: string
 }
 
-export const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson }) => {
+const LessonPlayer: React.FC<LessonPlayerProps> = ({ videoUrl }) => {
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{lesson.title}</h2>
-      <video
-        controls
-        className="w-full rounded-lg shadow-md"
-        src={lesson.videoUrl || ''}
-      />
-      <p className="text-gray-700">{lesson.description}</p>
+    <div className="w-full aspect-video mb-6 rounded overflow-hidden border">
+      <video controls className="w-full h-full">
+        <source src={videoUrl} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
   )
 }
+
+export default LessonPlayer

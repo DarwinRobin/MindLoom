@@ -1,7 +1,7 @@
 // src/app/courses/[courseId]/[lessonId]/page.tsx
+import { prisma } from '../../../lib/prisma'
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import { LessonPlayer } from '@/components/LessonPlayer'
+import LessonPlayer from '../../../../components/LessonPlayer'
 
 interface LessonPageProps {
   params: {
@@ -11,17 +11,19 @@ interface LessonPageProps {
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
-  const { courseId, lessonId } = params
+  const { lessonId } = params
 
   const lesson = await prisma.lesson.findUnique({
-    where: { id: lessonId }, // ✅ removed Number()
+    where: { id: lessonId },
   })
 
-  if (!lesson) notFound()
+  if (!lesson) return notFound()
 
   return (
-    <div className="p-6">
-      <LessonPlayer lesson={lesson} />
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow">
+      <h1 className="text-3xl font-bold mb-4">{lesson.title}</h1>
+      <LessonPlayer videoUrl={lesson.videoUrl} />
+      <p className="text-gray-700 mt-4">{lesson.content}</p>
     </div>
   )
 }
