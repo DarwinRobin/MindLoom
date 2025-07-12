@@ -1,36 +1,26 @@
-'use client'
-
 import { prisma } from '@/lib/prisma'
-import CourseCard from '@/components/CourseCard'
-import { Course } from '@prisma/client'
+import { notFound } from 'next/navigation'
+import LessonPlayer from '@/components/LessonPlayer'
 
-export default async function CoursesPage() {
-  const courses: (Course & { lessons: { id: string }[] })[] = await prisma.course.findMany({
-    include: {
-      lessons: {
-        select: { id: true },
-      },
-    },
+interface LessonPageProps {
+  params: {
+    courseId: string
+    lessonId: string
+  }
+}
+
+export default async function LessonPage({ params }: LessonPageProps) {
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: params.lessonId }
   })
 
+  if (!lesson) return notFound()
+
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <h1 className="text-4xl font-bold mb-8">All Courses</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {courses.map((course) => (
-          <CourseCard
-            key={course.id}
-            course={{
-              id: course.id,
-              title: course.title,
-              description: course.description,
-              level: course.level,
-              duration: course.duration,
-              lessons: course.lessons.length,
-            }}
-          />
-        ))}
-      </div>
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow">
+      <h1 className="text-3xl font-bold mb-4">{lesson.title}</h1>
+      <LessonPlayer videoUrl={lesson.videoUrl ?? ''} />
+      <p className="text-gray-700 mt-4">{lesson.content}</p>
     </div>
   )
 }
