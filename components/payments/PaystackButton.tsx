@@ -27,7 +27,7 @@ export const PaystackButton = ({
             toast.success('Payment successful!');
             onSuccess();
           },
-          onClose: () => toast.info('Payment closed'),
+          onClose: () => toast('Payment closed'),
         });
       }}
       className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700"
