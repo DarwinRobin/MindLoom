@@ -1,23 +1,27 @@
 // src/app/courses/[courseId]/[lessonId]/page.tsx
-import { prisma } from '@/lib/prisma';
-import LessonPlayerClient from '@/components/courses/LessonPlayerClient';
-import { notFound } from 'next/navigation';
+import { notFound } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
+import { LessonPlayer } from '@/components/LessonPlayer'
 
-interface LessonParams {
+interface LessonPageProps {
   params: {
-    courseId: string;
-    lessonId: string;
-  };
+    courseId: string
+    lessonId: string
+  }
 }
 
-export default async function LessonPage({ params }: LessonParams) {
-  const { courseId, lessonId } = params;
+export default async function LessonPage({ params }: LessonPageProps) {
+  const { courseId, lessonId } = params
 
   const lesson = await prisma.lesson.findUnique({
-    where: { id: Number(lessonId) },
-  });
+    where: { id: lessonId }, // ✅ removed Number()
+  })
 
-  if (!lesson) notFound();
+  if (!lesson) notFound()
 
-  return <LessonPlayerClient lesson={lesson} courseId={courseId} />;
+  return (
+    <div className="p-6">
+      <LessonPlayer lesson={lesson} />
+    </div>
+  )
 }
