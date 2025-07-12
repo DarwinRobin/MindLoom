@@ -1,26 +1,21 @@
-import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
-
-export default async function CoursePage({
-  params: { courseId }
-}: {
-  params: { courseId: string }
-}) {
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    include: { lessons: true }
-  })
-
-  if (!course) return notFound()
-
+// src/app/page.tsx
+export default function HomePage() {
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">{course.title}</h1>
-      <ul className="space-y-2">
-        {course.lessons.map((l) => (
-          <li key={l.id}>{l.title}</li>
-        ))}
-      </ul>
-    </div>
-  )
+    <main className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white px-4">
+      <section className="text-center py-20 max-w-3xl">
+        <h1 className="text-4xl font-bold mb-6">Welcome to <span className="text-indigo-400">MindLoom</span></h1>
+        <p className="text-lg mb-8">
+          A platform built by <strong>Darwin Robin</strong>. Explore psychology courses, join forums, contribute research—all in one place.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="/courses" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition">
+            View Courses
+          </a>
+          <a href="/community" className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white font-medium transition">
+            Join Community
+          </a>
+        </div>
+      </section>
+    </main>
+  );
 }

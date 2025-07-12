@@ -1,26 +1,26 @@
-import './globals.css';
-import { Inter } from 'next/font/google';
-import SessionProviderWrapper from './SessionProviderWrapper';
-
-const inter = Inter({ subsets: ['latin'] });
+import "../globals.css"
+import Header from "../components/Header"
+import Footer from "../components/Footer"
 
 export const metadata = {
-  title: 'MindLoom',
-  description: 'Mental health and psychology learning platform',
-};
+  title: "MindLoom",
+  description: "Your destination for psychology learning and community."
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className}`}>
-        <SessionProviderWrapper>
+      <body className="bg-gray-900 text-white">
+        <Header />
+        <main className="min-h-screen">
           {children}
-        </SessionProviderWrapper>
+        </main>
+        <Footer />
       </body>
     </html>
-  );
+  )
 }
